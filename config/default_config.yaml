@@ -1,0 +1,145 @@
+# ML Code Analyzer — Default Configuration
+
+features:
+  names:
+    - total_lines
+    - code_lines
+    - blank_lines
+    - comment_lines
+    - comment_ratio
+    - num_functions
+    - num_classes
+    - num_methods
+    - avg_function_length
+    - max_function_length
+    - num_imports
+    - num_unique_imports
+    - cyclomatic_complexity
+    - max_nesting_depth
+    - avg_nesting_depth
+    - num_branches
+    - num_loops
+    - num_try_except
+    - num_assertions
+    - num_lambda_functions
+    - has_docstrings
+    - docstring_coverage
+    - has_type_hints
+    - type_hint_coverage
+    - avg_identifier_length
+    - num_global_variables
+    - num_nested_functions
+    - num_return_statements
+    - uses_star_import
+    - syntax_error
+
+  thresholds:
+    total_lines:
+      healthy: [0, 200]
+      warning: [200, 500]
+      danger: [500, 99999]
+    cyclomatic_complexity:
+      healthy: [0, 10]
+      warning: [10, 20]
+      danger: [20, 99999]
+    max_nesting_depth:
+      healthy: [0, 3]
+      warning: [3, 5]
+      danger: [5, 99999]
+    comment_ratio:
+      healthy: [0.1, 1.0]
+      warning: [0.05, 0.1]
+      danger: [0.0, 0.05]
+    docstring_coverage:
+      healthy: [0.7, 1.0]
+      warning: [0.3, 0.7]
+      danger: [0.0, 0.3]
+    type_hint_coverage:
+      healthy: [0.7, 1.0]
+      warning: [0.3, 0.7]
+      danger: [0.0, 0.3]
+    avg_function_length:
+      healthy: [0, 20]
+      warning: [20, 50]
+      danger: [50, 99999]
+    num_global_variables:
+      healthy: [0, 2]
+      warning: [2, 5]
+      danger: [5, 99999]
+    uses_star_import:
+      healthy: [0, 0]
+      warning: [0, 0]
+      danger: [1, 1]
+
+models:
+  default: random_forest
+  available:
+    - random_forest
+    - gradient_boosting
+  random_forest:
+    n_estimators: 200
+    max_depth: 15
+    min_samples_split: 5
+    min_samples_leaf: 2
+    class_weight: balanced
+    random_state: 42
+    param_grid:
+      n_estimators: [100, 200, 300]
+      max_depth: [10, 15, 20]
+      min_samples_split: [2, 5, 10]
+  gradient_boosting:
+    n_estimators: 200
+    max_depth: 5
+    learning_rate: 0.1
+    subsample: 0.8
+    random_state: 42
+    param_grid:
+      n_estimators: [100, 200]
+      max_depth: [3, 5, 7]
+      learning_rate: [0.05, 0.1, 0.2]
+
+training:
+  test_size: 0.2
+  random_state: 42
+  cv_folds: 5
+  class_balance_method: class_weight  # or 'smote'
+  scoring: f1_weighted
+
+data:
+  repo_urls:
+    - https://github.com/pallets/flask
+    - https://github.com/psf/requests
+    - https://github.com/scikit-learn/scikit-learn
+    - https://github.com/fastapi/fastapi
+    - https://github.com/pandas-dev/pandas
+  synthetic_samples_count: 2500
+  buggy_ratio: 0.35
+  bug_fix_patterns:
+    - "fix"
+    - "bug"
+    - "patch"
+    - "error"
+    - "issue"
+    - "crash"
+    - "resolve"
+    - "hotfix"
+    - "repair"
+
+app:
+  page_title: "ML Code Analyzer"
+  page_icon: "🔍"
+  risk_thresholds:
+    low: 0.3
+    medium: 0.6
+    high: 0.8
+  risk_colors:
+    low: "#2ecc71"
+    medium: "#f39c12"
+    high: "#e67e22"
+    critical: "#e74c3c"
+
+paths:
+  model_dir: "models/pretrained"
+  data_dir: "data"
+  output_dir: "outputs"
+  sample_data_dir: "sample_data"
