@@ -17,16 +17,11 @@ streamlit>=1.28.0
 PyYAML>=6.0
 requests>=2.31.0
 
-# Development / testing
-pytest>=7.4.0
-pytest-cov>=4.1.0
-
-# Jupyter
-jupyter>=1.0.0
-nbformat>=5.9.0
-
-# Optional: XGBoost (install separately if needed)
-# xgboost>=2.0.0
-
-# Imbalanced learning (for SMOTE)
+# Class balancing
 imbalanced-learn>=0.11.0
+
+# Development / testing (install locally with: pip install pytest pytest-cov jupyter)
+# pytest>=7.4.0
+# pytest-cov>=4.1.0
+# jupyter>=1.0.0
+# nbformat>=5.9.0
