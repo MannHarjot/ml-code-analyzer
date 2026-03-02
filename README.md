@@ -1,4 +1,4 @@
-# 🔍 ML Code Analyzer
+# ML Code Analyzer
 
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/)
 [![scikit-learn](https://img.shields.io/badge/scikit--learn-1.3+-orange.svg)](https://scikit-learn.org/)
@@ -6,216 +6,136 @@
 [![Docker](https://img.shields.io/badge/Docker-ready-blue.svg)](https://www.docker.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-**ML-powered source code quality analyzer** — extracts 30+ AST features from Python code and predicts bug risk using trained Random Forest and Gradient Boosting classifiers. Includes a live Streamlit web dashboard for interactive analysis.
+I built this to get better at applying ML to something more concrete than toy datasets. The idea: parse Python source files with the `ast` module, pull out ~30 features (complexity, nesting depth, docstring coverage, etc.), and train a classifier to predict whether a file is likely to contain bugs.
 
-> Built as a portfolio project demonstrating ML engineering, code analysis, and productionization skills relevant to AMD's source code analysis work.
-
----
-
-## 📸 Dashboard Preview
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  🔍 ML Code Analyzer                                            │
-│  ─────────────────────────────────────────────────────────────  │
-│  [Analyze Code] [Batch Analysis] [Model Insights] [About]       │
-│                                                                 │
-│  ┌──────────────────────────┐  ┌───────────────────────────┐   │
-│  │  🔴 72% High Risk        │  │  Top Risk Factors         │   │
-│  │  ████████████░░░░░░░░    │  │  ▶ Cyclomatic Complexity  │   │
-│  │                          │  │  ▶ Max Nesting Depth      │   │
-│  │  Recommendations:        │  │  ▶ Docstring Coverage     │   │
-│  │  ▶ Reduce nesting depth  │  └───────────────────────────┘   │
-│  │  ▶ Add docstrings        │                                   │
-│  └──────────────────────────┘                                   │
-└─────────────────────────────────────────────────────────────────┘
-```
+The web dashboard lets you paste any Python code and get a risk score back in seconds.
 
 ---
 
-## 🚀 Quick Start
+## How it works
+
+```
+your .py file
+     │
+     ▼
+AST parser  →  30+ features extracted
+                  ├─ structural  (LOC, functions, imports)
+                  ├─ complexity  (cyclomatic, nesting depth)
+                  └─ quality     (docstrings, type hints)
+     │
+     ▼
+Random Forest / Gradient Boosting
+     │
+     ▼
+risk score + what's causing it
+```
+
+The model was trained on synthetic data generated from realistic distributions — high-complexity, undocumented code maps to buggy; well-structured, type-annotated code maps to clean. No internet required to train.
+
+---
+
+## Running it locally
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/harjotsinghmann/ml-code-analyzer.git
+git clone https://github.com/MannHarjot/ml-code-analyzer.git
 cd ml-code-analyzer
 
-# 2. Create virtual environment and install dependencies
-python -m venv .venv && source .venv/bin/activate   # macOS/Linux
-# python -m venv .venv && .venv\Scripts\activate    # Windows
+python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
-# 3. Train the model (takes ~30 seconds, synthetic data — no internet needed)
-python scripts/train.py
-
-# 4. Launch the dashboard
+# model is already pre-trained, just launch:
 streamlit run app/streamlit_app.py
-# → Open http://localhost:8501
 ```
 
----
-
-## 🐳 Docker Quick Start
+Or with Docker:
 
 ```bash
 docker-compose up
-# → Open http://localhost:8501
 ```
 
-The container auto-trains the model on startup.
+Both open at `http://localhost:8501`.
 
 ---
 
-## 🏗️ Architecture
+## CLI
 
-```
-Source Code
-    │
-    ▼
-AST Parser (ast module)
-    │
-    ▼
-Feature Extractor (30+ metrics)
-    │  ┌─ Structural: LOC, functions, classes, imports
-    │  ├─ Complexity: cyclomatic, nesting depth, branches
-    │  └─ Quality: docstrings, type hints, star imports
-    ▼
-ML Classifier (Random Forest / Gradient Boosting)
-    │
-    ▼
-Risk Report (0–100% score + recommendations)
+```bash
+# single file
+python scripts/analyze.py --file mycode.py
+
+# whole directory, export to csv
+python scripts/analyze.py --dir src/ --output csv > report.csv
+
+# retrain from scratch
+python scripts/train.py --synthetic --samples 5000
 ```
 
 ---
 
-## ✨ Features
+## What gets extracted
 
-| Feature | Description |
-|---|---|
-| **30+ Code Metrics** | AST-based structural, complexity, and quality features |
-| **Two Classifiers** | Random Forest and Gradient Boosting with cross-validation |
-| **Live Dashboard** | Streamlit web UI with risk gauge, charts, recommendations |
-| **Batch Analysis** | Analyze entire directories or multiple uploaded files |
-| **CLI Tool** | `python scripts/analyze.py --file mycode.py` |
-| **No Internet Required** | Synthetic dataset generator for offline training |
-| **Docker Ready** | One-command deployment with docker-compose |
+**Structural** — total lines, code vs comment ratio, number of functions/classes/methods, import count, average and max function length
+
+**Complexity** — cyclomatic complexity, max nesting depth, branch count, loop count, try/except blocks, lambda usage
+
+**Quality signals** — docstring coverage, type hint coverage, global variable count, star imports, average identifier length
 
 ---
 
-## 📊 Model Performance
-
-Trained on 2,500 synthetic samples generated from realistic code quality distributions:
-
-| Metric | Random Forest | Gradient Boosting |
-|---|---|---|
-| Accuracy | 0.89+ | 0.87+ |
-| F1 (Weighted) | 0.89+ | 0.87+ |
-| ROC-AUC | 0.95+ | 0.94+ |
-| Precision | 0.89+ | 0.87+ |
-
-*Scores vary slightly by random seed. See `models/pretrained/metrics.json` for your exact results.*
-
----
-
-## 📁 Project Structure
+## Project layout
 
 ```
 ml-code-analyzer/
 ├── app/
-│   ├── streamlit_app.py          # Main Streamlit dashboard
-│   └── components/               # Modular UI components
+│   ├── streamlit_app.py
+│   └── components/
 ├── src/
-│   ├── features/
-│   │   ├── ast_extractor.py      # Core AST feature extraction
-│   │   ├── complexity.py         # Cyclomatic complexity, nesting
-│   │   └── code_metrics.py       # Docstrings, type hints, globals
-│   ├── data/
-│   │   ├── synthetic_dataset.py  # Offline dataset generator
-│   │   ├── repo_miner.py         # GitHub repo mining
-│   │   └── build_dataset.py      # Pipeline orchestrator
-│   ├── models/
-│   │   ├── classifier.py         # RF + GBT model factory
-│   │   └── trainer.py            # CV training pipeline
+│   ├── features/        ← ast_extractor, complexity, code_metrics
+│   ├── data/            ← synthetic dataset + github repo miner
+│   ├── models/          ← classifier factory, training pipeline
 │   ├── evaluation/
-│   │   └── metrics.py            # F1, ROC-AUC, confusion matrix
 │   └── visualization/
-│       └── plots.py              # Charts and heatmaps
-├── scripts/
-│   ├── train.py                  # Train models from CLI
-│   ├── analyze.py                # Analyze files from CLI
-│   └── build_dataset.py         # Build dataset from CLI
-├── models/pretrained/            # Saved model artifacts
-├── sample_data/                  # Demo Python files
-├── tests/                        # pytest test suite
-├── config/default_config.yaml   # Centralized configuration
-├── Dockerfile
-└── docker-compose.yml
+├── scripts/             ← train.py, analyze.py, build_dataset.py
+├── models/pretrained/   ← shipped model, no training needed to demo
+├── sample_data/         ← clean / medium / buggy example files
+├── tests/               ← 45 pytest tests
+└── config/
 ```
 
 ---
 
-## 🛠️ CLI Usage
+## Model performance
 
-**Analyze a single file:**
-```bash
-python scripts/analyze.py --file sample_data/buggy_example.py
-python scripts/analyze.py --file mycode.py --output json
-```
+Trained with 5-fold cross-validation on 2,500 samples:
 
-**Analyze a directory:**
-```bash
-python scripts/analyze.py --dir src/ --threshold 0.5 --output table
-python scripts/analyze.py --dir . --output csv > report.csv
-```
+| | Random Forest | Gradient Boosting |
+|---|---|---|
+| Accuracy | 0.89+ | 0.87+ |
+| F1 | 0.89+ | 0.87+ |
+| ROC-AUC | 0.95+ | 0.94+ |
 
-**Train with options:**
-```bash
-python scripts/train.py --synthetic --samples 5000
-python scripts/train.py --grid-search   # hyperparameter tuning
-python scripts/train.py --models random_forest gradient_boosting
-```
+Exact numbers after training are in `models/pretrained/metrics.json`.
 
 ---
 
-## 📐 Feature Extraction Details
-
-### Structural Features
-`total_lines` · `code_lines` · `blank_lines` · `comment_lines` · `comment_ratio`
-`num_functions` · `num_classes` · `num_methods` · `avg_function_length` · `max_function_length`
-`num_imports` · `num_unique_imports`
-
-### Complexity Features
-`cyclomatic_complexity` · `max_nesting_depth` · `avg_nesting_depth`
-`num_branches` · `num_loops` · `num_try_except` · `num_assertions` · `num_lambda_functions`
-
-### Code Quality Features
-`has_docstrings` · `docstring_coverage` · `has_type_hints` · `type_hint_coverage`
-`avg_identifier_length` · `num_global_variables` · `num_nested_functions`
-`num_return_statements` · `uses_star_import`
-
----
-
-## 🧪 Running Tests
+## Tests
 
 ```bash
 pip install pytest pytest-cov
-pytest tests/ -v --tb=short
-pytest tests/ --cov=src --cov-report=html
+pytest tests/ -v
 ```
 
----
-
-## 🔮 Future Improvements
-
-- **C/C++ support** via `tree-sitter` — directly applicable to AMD's GPU computing codebase (HIP, ROCm)
-- **AMD ROCm acceleration** — GPU-accelerated feature extraction for large-scale repo scanning
-- **Deep learning models** — CodeBERT / GraphCodeBERT for semantic understanding beyond syntax
-- **VS Code extension** — real-time risk indicators in the editor gutter
-- **CI/CD integration** — GitHub Actions quality gate that blocks PRs above risk threshold
-- **Multi-language support** — JavaScript, Rust, Go via tree-sitter unified AST
+45 tests covering feature extraction, complexity calculations, model save/load, and prediction output.
 
 ---
 
-## 📄 License
+## What I'd add next
+
+- **C/C++ support via tree-sitter** — same pipeline but for systems code, relevant for GPU kernel work (HIP/ROCm)
+- **CodeBERT embeddings** on top of the AST features for better semantic understanding
+- **GitHub Actions integration** — flag PRs that push a file's risk score above a threshold
+- **VS Code extension** — show risk score inline while writing
+
+---
 
 MIT © 2025 Harjot Singh Mann
