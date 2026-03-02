@@ -6,6 +6,8 @@
 [![Docker](https://img.shields.io/badge/Docker-ready-blue.svg)](https://www.docker.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
+**Live demo: [ml-code-analyzer.streamlit.app](https://ml-code-analyzer.streamlit.app)**
+
 I built this to get better at applying ML to something more concrete than toy datasets. The idea: parse Python source files with the `ast` module, pull out ~30 features (complexity, nesting depth, docstring coverage, etc.), and train a classifier to predict whether a file is likely to contain bugs.
 
 The web dashboard lets you paste any Python code and get a risk score back in seconds.
